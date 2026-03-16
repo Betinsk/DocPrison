@@ -1,0 +1,148 @@
+{
+  "controller": "AddressController",
+  "package": "com.federal.prision.address",
+  "baseEndpoint": "/addresses",
+  "description": "Controller responsável por gerenciar operações relacionadas aos endereços associados às pessoas no sistema.",
+  "methods": [
+    {
+      "method": "GET",
+      "endpoint": "/addresses",
+      "name": "findAll",
+      "objective": "Listar todos os endereços cadastrados",
+      "description": "Retorna todos os endereços armazenados no sistema.",
+      "input": {
+        "type": "none"
+      },
+      "output": {
+        "type": "List<Address>",
+        "status": 200,
+        "example": [
+          {
+            "id": 1,
+            "street": "Main Street",
+            "city": "New York",
+            "state": "NY",
+            "zipCode": "10001"
+          }
+        ]
+      },
+      "rules": [
+        "Retorna uma lista com todos os endereços cadastrados",
+        "Caso não existam registros, retorna uma lista vazia"
+      ]
+    },
+    {
+      "method": "GET",
+      "endpoint": "/addresses/{id}",
+      "name": "findById",
+      "objective": "Buscar endereço por ID",
+      "description": "Consulta um endereço específico no banco de dados utilizando o ID.",
+      "input": {
+        "type": "PathVariable",
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "type": "Address",
+        "status": 200,
+        "example": {
+          "id": 1,
+          "street": "Main Street",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10001"
+        }
+      },
+      "rules": [
+        "O ID deve existir no banco de dados",
+        "Caso não exista, pode retornar erro 404"
+      ]
+    },
+    {
+      "method": "POST",
+      "endpoint": "/addresses/persons/{personId}/addresses",
+      "name": "create",
+      "objective": "Criar um novo endereço para uma pessoa",
+      "description": "Recebe os dados de endereço via AddressDto e associa o endereço a uma pessoa existente.",
+      "input": {
+        "type": "AddressDto",
+        "example": {
+          "street": "Main Street",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10001"
+        }
+      },
+      "output": {
+        "type": "Address",
+        "status": 201,
+        "example": {
+          "id": 10,
+          "street": "Main Street",
+          "city": "New York",
+          "state": "NY",
+          "zipCode": "10001"
+        }
+      },
+      "rules": [
+        "O personId deve existir no banco",
+        "Os dados devem passar pela validação @Valid",
+        "Um endereço sempre deve estar associado a uma pessoa"
+      ]
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/addresses/{id}",
+      "name": "updateAddress",
+      "objective": "Atualizar um endereço existente",
+      "description": "Atualiza os dados de um endereço existente utilizando o ID.",
+      "input": {
+        "type": "Address",
+        "example": {
+          "street": "New Street",
+          "city": "Boston",
+          "state": "MA",
+          "zipCode": "02101"
+        }
+      },
+      "output": {
+        "type": "Address",
+        "status": 200,
+        "example": {
+          "id": 1,
+          "street": "New Street",
+          "city": "Boston",
+          "state": "MA",
+          "zipCode": "02101"
+        }
+      },
+      "rules": [
+        "O ID deve existir no banco",
+        "Os dados enviados substituem os dados atuais do endereço"
+      ]
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/addresses/{id}",
+      "name": "deleteAddress",
+      "objective": "Remover um endereço do sistema",
+      "description": "Remove um endereço do banco de dados utilizando o ID informado.",
+      "input": {
+        "type": "PathVariable",
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "type": "void",
+        "status": 204,
+        "description": "Retorna resposta sem conteúdo após exclusão."
+      },
+      "rules": [
+        "O ID deve existir no banco",
+        "Após exclusão o endereço não poderá mais ser recuperado"
+      ]
+    }
+  ]
+}

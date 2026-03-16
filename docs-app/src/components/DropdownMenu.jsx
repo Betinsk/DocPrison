@@ -1,40 +1,32 @@
 export default function DropDownMenu({ type, onSelect }) {
+
+  const options = ["Class", "Repository", "Controller", "Service"];
+
   return (
-    <li className="nav-item dropdown">
-      <a
-        className="nav-link dropdown-toggle"
-        href="#"
-        role="button"
+    <li className="nav-item dropdown w-100">
+
+      <button
+        className="nav-link dropdown-toggle w-100 text-start"
         data-bs-toggle="dropdown"
       >
         {type}
-      </a>
+      </button>
 
-      <ul className="dropdown-menu">
-        <li>
-          <button className="dropdown-item" onClick={() => onSelect(`${type}Class`)}>
-            {type} Class
-          </button>
-        </li>
+      <ul className="dropdown-menu w-100">
 
-        <li>
-          <button className="dropdown-item" onClick={() => onSelect(`${type}Repository`)}>
-            {type} Repository
-          </button>
-        </li>
+        {options.map((opt) => (
+          <li key={opt}>
+            <button
+              className="dropdown-item w-100 text-start"
+              onClick={() => onSelect(`${type}${opt}`)}
+            >
+              {type} {opt}
+            </button>
+          </li>
+        ))}
 
-        <li>
-          <button className="dropdown-item" onClick={() => onSelect(`${type}Controller`)}>
-            {type} Controller
-          </button>
-        </li>
-
-        <li>
-          <button className="dropdown-item" onClick={() => onSelect(`${type}Service`)}>
-            {type} Service
-          </button>
-        </li>
       </ul>
+
     </li>
   );
 }
