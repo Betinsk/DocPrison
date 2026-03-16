@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Address",
+    "objective": "Registrar um novo endereço no sistema",
+    "description": "Recebe os dados de um endereço e realiza a persistência no banco de dados através do repositório.",
+    "input":   [
+        {
+            "streetAddress": "9809 Margo Street",
+            "addressComplement": "beje house",
+            "city": "Albuquerque",
+            "state": "New Mexico",
+            "country": "EUA"
+        }
+    ],
+    "rules": ["Os dados do endeço devem ser válidos", "Pode conter múltiplos endereços associados"]
+  }
+]

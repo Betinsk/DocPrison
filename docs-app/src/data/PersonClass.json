@@ -1,0 +1,14 @@
+[
+  {
+    "name": "createPerson",
+    "objective": "Registrar uma nova pessoa no sistema",
+    "description": "Recebe os dados de uma pessoa e realiza a persistência no banco de dados através do repositório.",
+    "input": [{
+        "id": 1,
+        "socialSecurity": "188448443",
+        "birthDate": "1971-12-25",
+        "name": "Whiter White",
+        "email": "WWhite@gmail.com"}],
+    "rules": ["Os dados da pessoa devem ser válidos", "Pode conter múltiplos endereços associados"]
+  }
+]
