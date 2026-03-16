@@ -1,28 +1,54 @@
 import { useNavigate } from "react-router-dom";
 import DropDownMenu from "./DropdownMenu";
-const modules = import.meta.glob("../data/*.json");
+const entityDocs = import.meta.glob("../data/entities/*.json");
+const controllerDocs = import.meta.glob("../data/controllers/*.json");
 
 export default function Sidebar() {
     const navigate = useNavigate();
 
-    async function loadInfData(name) {
-        console.log(Object.keys(modules));
-        const path = `../data/${name}.json`;
-        const loader = modules[path];
-        if (!loader) {
-            console.error("Arquivo não encontrado:", name);
-            return null;
-        }
-        const data = await loader();
-        return data.default;
-    }
-
     function handleSelect(className) {
         loadInfData(className).then((data) => {
             if (!data) return;
-            navigate("/information", { state: { className: data } });
+            console.log(data)
+         const route = className.endsWith("Controller")
+            ? "/informationController"
+            : "/information";
+        navigate(route, { state: { className: data } });
         });
     }
+
+  async function loadInfData(className) {
+
+  try {
+
+    const isController = className.endsWith("Controller");
+
+    const docs = isController ? controllerDocs : entityDocs;
+
+    const path = isController
+      ? `../data/controllers/${className}.json`
+      : `../data/entities/${className}.json`;
+
+    const loader = docs[path];
+
+    if (!loader) {
+      console.error("Arquivo não encontrado:", path);
+      return null;
+    }
+
+    const module = await loader();
+
+    return module.default;
+
+  } catch (error) {
+
+    console.error("Erro carregando documentação:", error);
+    return null;
+
+  }
+}
+
+
 
     return (
         <>

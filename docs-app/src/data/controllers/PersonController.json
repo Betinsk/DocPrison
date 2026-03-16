@@ -1,0 +1,142 @@
+{
+  "controller": "PersonController",
+  "package": "com.federal.prision.person",
+  "baseEndpoint": "/person",
+  "description": "Controller responsável por gerenciar operações relacionadas a pessoas no sistema, incluindo criação, consulta, atualização e remoção.",
+  "methods": [
+    {
+      "method": "POST",
+      "endpoint": "/person",
+      "name": "createPersonWithAddress",
+      "objective": "Criar uma nova pessoa com endereço associado",
+      "description": "Recebe um objeto PersonDto contendo os dados da pessoa e seus endereços, valida as informações e realiza a persistência no banco de dados através do PersonService.",
+      "input": {
+        "type": "PersonDto",
+        "example": {
+          "name": "Walter White",
+          "birthDate": "1971-12-25",
+          "email": "wwhite@gmail.com",
+          "socialSecurity": "188448443",
+          "addresses": [
+            {
+              "street": "Albuquerque Street",
+              "city": "Albuquerque",
+              "state": "New Mexico",
+              "zipCode": "87101"
+            }
+          ]
+        }
+      },
+      "output": {
+        "type": "Person",
+        "status": 201,
+        "description": "Retorna a pessoa criada com os dados persistidos no banco."
+      },
+      "rules": [
+        "Os dados devem passar pela validação definida nas anotações @Valid",
+        "Social Security não pode estar duplicado no banco",
+        "Pode conter múltiplos endereços associados",
+        "Caso os dados sejam inválidos, retorna erro de validação"
+      ]
+    },
+    {
+      "method": "GET",
+      "endpoint": "/person",
+      "name": "findAll",
+      "objective": "Listar todas as pessoas cadastradas",
+      "description": "Busca todas as pessoas registradas no sistema através do PersonService.",
+      "input": {
+        "type": "none"
+      },
+      "output": {
+        "type": "List<Person>",
+        "status": 200,
+        "example": [
+          {
+            "id": 1,
+            "name": "Walter White",
+            "email": "wwhite@gmail.com",
+            "socialSecurity": "188448443"
+          }
+        ]
+      },
+      "rules": [
+        "Retorna uma lista de pessoas cadastradas",
+        "Caso não existam registros, retorna uma lista vazia"
+      ]
+    },
+    {
+      "method": "GET",
+      "endpoint": "/person/{id}",
+      "name": "findById",
+      "objective": "Buscar uma pessoa pelo ID",
+      "description": "Consulta o banco de dados para retornar os dados de uma pessoa específica.",
+      "input": {
+        "type": "PathVariable",
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "type": "Person",
+        "status": 200,
+        "example": {
+          "id": 1,
+          "name": "Walter White",
+          "email": "wwhite@gmail.com",
+          "socialSecurity": "188448443"
+        }
+      },
+      "rules": [
+        "O ID deve existir no banco",
+        "Caso o ID não seja encontrado, pode retornar erro 404"
+      ]
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/person/{id}",
+      "name": "updatePerson",
+      "objective": "Atualizar os dados de uma pessoa",
+      "description": "Recebe um PersonUpdateDto com os dados atualizados e aplica as alterações no registro correspondente.",
+      "input": {
+        "type": "PersonUpdateDto",
+        "example": {
+          "name": "Walter Hartwell White",
+          "email": "walterwhite@gmail.com"
+        }
+      },
+      "output": {
+        "type": "Person",
+        "status": 200,
+        "description": "Retorna o objeto atualizado."
+      },
+      "rules": [
+        "O ID informado deve existir",
+        "Apenas campos presentes no DTO podem ser alterados",
+        "Os dados devem respeitar as validações do DTO"
+      ]
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/person/{id}",
+      "name": "deletePerson",
+      "objective": "Remover uma pessoa do sistema",
+      "description": "Remove o registro de uma pessoa no banco de dados através do ID informado.",
+      "input": {
+        "type": "PathVariable",
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "type": "void",
+        "status": 204,
+        "description": "Retorna resposta sem conteúdo após exclusão."
+      },
+      "rules": [
+        "O ID deve existir no banco",
+        "Após exclusão o registro não poderá mais ser recuperado"
+      ]
+    }
+  ]
+}

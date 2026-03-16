@@ -1,0 +1,23 @@
+[
+  {
+    "name": "existsBySocialSecurity",
+    "objective": "Verificar se já existe uma pessoa cadastrada com o Social Security informado",
+    "description": "Consulta o banco de dados para verificar se existe um registro de pessoa com o mesmo Social Security. É utilizado para evitar duplicidade de cadastro.",
+    "input": [
+      {
+        "socialSecurity": "188448443"
+      }
+    ],
+    "output": [
+      {
+        "exists": true
+      }
+    ],
+    "rules": [
+      "O Social Security não pode ser nulo",
+      "O Social Security deve possuir formato válido",
+      "Caso já exista no banco, o método retorna true",
+      "Caso não exista, o método retorna false"
+    ]
+  }
+]
