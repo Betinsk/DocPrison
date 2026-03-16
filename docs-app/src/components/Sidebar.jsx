@@ -28,6 +28,8 @@ export default function Sidebar() {
         <>
             <DropDownMenu type="Person" onSelect={handleSelect} />
             <DropDownMenu type="Address" onSelect={handleSelect} />
+            <DropDownMenu type="inmates" onSelect={handleSelect} />
+
         </>
     )
 }
