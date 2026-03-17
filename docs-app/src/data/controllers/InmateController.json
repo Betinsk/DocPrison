@@ -1,0 +1,80 @@
+{
+  "controller": "InmateController",
+  "description": "Responsável por gerenciar os endpoints relacionados aos detentos do sistema.",
+  "methods": [
+    {
+      "name": "findAll",
+      "method": "GET",
+      "endpoint": "/inmate",
+      "objective": "Listar todos os detentos cadastrados",
+      "description": "Retorna uma lista com todos os detentos armazenados no banco de dados.",
+      "input": [],
+      "output": {
+        "example": [
+          {
+            "id": 1,
+            "socialSecurity": "188448443",
+            "name": "Walter White",
+            "email": "wwhite@gmail.com",
+            "commitedCrime": "Drug trafficking",
+            "arrestDate": "2020-05-10",
+            "sentenceYears": 10
+          }
+        ]
+      },
+      "rules": [
+        "Retorna todos os registros disponíveis",
+        "Pode retornar lista vazia"
+      ]
+    },
+    {
+      "name": "findById",
+      "method": "GET",
+      "endpoint": "/inmate/{id}",
+      "objective": "Buscar um detento pelo ID",
+      "description": "Retorna um detento específico com base no ID informado.",
+      "input": {
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "example": {
+          "id": 1,
+          "socialSecurity": "188448443",
+          "name": "Walter White",
+          "email": "wwhite@gmail.com",
+          "commitedCrime": "Drug trafficking",
+          "arrestDate": "2020-05-10",
+          "sentenceYears": 10
+        }
+      },
+      "rules": [
+        "O ID deve existir",
+        "Caso não exista, retorna erro"
+      ]
+    },
+    {
+      "name": "deleteInmate",
+      "method": "DELETE",
+      "endpoint": "/inmate/{id}",
+      "objective": "Remover um detento do sistema",
+      "description": "Remove um detento com base no ID informado.",
+      "input": {
+        "example": {
+          "id": 1
+        }
+      },
+      "output": {
+        "example": {
+          "message": "Inmate deleted with success 1"
+        }
+      },
+      "rules": [
+        "O ID deve existir",
+        "Caso não exista, retorna erro",
+        "Retorna mensagem de confirmação após exclusão"
+      ]
+    }
+  ]
+}

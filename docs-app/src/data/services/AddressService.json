@@ -1,0 +1,104 @@
+[
+  {
+    "name": "createAddress",
+    "objective": "Criar um novo endereço para uma pessoa",
+    "description": "Recebe um endereço e o ID da pessoa, busca a pessoa no banco e associa o endereço antes de salvar.",
+    "input": [
+      {
+        "address": {
+          "street": "Rua A",
+          "addressComplement": "Apto 101",
+          "city": "Belo Horizonte",
+          "state": "MG",
+          "country": "Brazil"
+        },
+        "personId": 1
+      }
+    ],
+    "output": [
+      {
+        "address": "Objeto Address salvo no banco"
+      }
+    ],
+    "rules": [
+      "O ID da pessoa deve existir no banco",
+      "O endereço deve ser vinculado a uma pessoa",
+      "Caso a pessoa não exista, lança RuntimeException"
+    ]
+  },
+  {
+    "name": "findById",
+    "objective": "Buscar um endereço pelo ID",
+    "description": "Busca um endereço no banco de dados utilizando o ID informado.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [
+      {
+        "address": "Objeto Address encontrado"
+      }
+    ],
+    "rules": [
+      "O ID deve existir no banco",
+      "Caso não exista, lança ObjectNotFoundException"
+    ]
+  },
+  {
+    "name": "findAll",
+    "objective": "Listar todos os endereços cadastrados",
+    "description": "Retorna todos os endereços armazenados no banco de dados.",
+    "input": [],
+    "output": [
+      {
+        "addresses": "Lista de objetos Address"
+      }
+    ],
+    "rules": [
+      "Caso não existam registros, lança ObjectNotFoundException"
+    ]
+  },
+  {
+    "name": "updateAddress",
+    "objective": "Atualizar um endereço existente",
+    "description": "Busca um endereço pelo ID e atualiza seus dados com base nas informações fornecidas.",
+    "input": [
+      {
+        "id": 1,
+        "addressRequest": {
+          "street": "Nova Rua",
+          "addressComplement": "Casa",
+          "city": "São Paulo",
+          "state": "SP",
+          "country": "Brazil"
+        }
+      }
+    ],
+    "output": [
+      {
+        "address": "Objeto Address atualizado"
+      }
+    ],
+    "rules": [
+      "O ID deve existir no banco",
+      "Os campos do endereço são sobrescritos pelos novos valores",
+      "Caso não exista, lança RuntimeException"
+    ]
+  },
+  {
+    "name": "deleteAdress",
+    "objective": "Remover um endereço do sistema",
+    "description": "Remove um endereço do banco de dados com base no ID informado.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [],
+    "rules": [
+      "O ID deve existir no banco",
+      "Caso não exista, lança ObjectNotFoundException"
+    ]
+  }
+]

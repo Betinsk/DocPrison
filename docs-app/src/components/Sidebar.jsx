@@ -1,61 +1,87 @@
 import { useNavigate } from "react-router-dom";
 import DropDownMenu from "./DropdownMenu";
-const entityDocs = import.meta.glob("../data/entities/*.json");
-const controllerDocs = import.meta.glob("../data/controllers/*.json");
+
+import { types } from "../service/types";
 
 export default function Sidebar() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    function handleSelect(className) {
-        loadInfData(className).then((data) => {
-            if (!data) return;
-            console.log(data)
-         const route = className.endsWith("Controller")
-            ? "/informationController"
-            : "/information";
-        navigate(route, { state: { className: data } });
-        });
+  function handleSelect(className) {
+    loadInfData(className).then((data) => {
+      if (!data) return;
+      console.log(data)
+
+    let route = "/information";
+
+    if (className.endsWith("Controller")) {
+        route = "/informationController";
+    } else if (className.endsWith("Service")) {
+        route = "/informationService";
     }
+
+      navigate(route, { state: { className: data } });
+    });
+  }
 
   async function loadInfData(className) {
+    try {
 
-  try {
+      const type = types.find(t => t.match(className));
 
-    const isController = className.endsWith("Controller");
+      const docs = type.docs;
+      const path = type.path(className);
 
-    const docs = isController ? controllerDocs : entityDocs;
+      const loader = docs[path];
 
-    const path = isController
-      ? `../data/controllers/${className}.json`
-      : `../data/entities/${className}.json`;
+      if (!loader) {
+        throw new Error("Arquivo não encontrado");
+      }
 
-    const loader = docs[path];
+      const data = await loader();
+      return data.default;
 
-    if (!loader) {
-      console.error("Arquivo não encontrado:", path);
-      return null;
+    } catch (error) {
+      console.error(error);
     }
-
-    const module = await loader();
-
-    return module.default;
-
-  } catch (error) {
-
-    console.error("Erro carregando documentação:", error);
-    return null;
-
   }
-}
 
+  /* async function loadInfData(className) {
+  
+    try {
+  
+      const isController = className.endsWith("Controller");
+  
+      const docs = isController ? controllerDocs : entityDocs;
+  
+      const path = isController
+        ? `../data/controllers/${className}.json`
+        : `../data/entities/${className}.json`;
+  
+      const loader = docs[path];
+  
+      if (!loader) {
+        console.error("Arquivo não encontrado:", path);
+        return null;
+      }
+  
+      const module = await loader();
+  
+      return module.default;
+  
+    } catch (error) {
+  
+      console.error("Erro carregando documentação:", error);
+      return null;
+  
+    }
+  } */
 
+  return (
+    <>
+      <DropDownMenu type="Person" onSelect={handleSelect} />
+      <DropDownMenu type="Address" onSelect={handleSelect} />
+      <DropDownMenu type="Inmate" onSelect={handleSelect} />
 
-    return (
-        <>
-            <DropDownMenu type="Person" onSelect={handleSelect} />
-            <DropDownMenu type="Address" onSelect={handleSelect} />
-            <DropDownMenu type="inmates" onSelect={handleSelect} />
-
-        </>
-    )
+    </>
+  )
 }

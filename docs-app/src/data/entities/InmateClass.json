@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Inmate",
+    "objective": "Representar um detento no sistema prisional",
+    "description": "Entidade que herda de Person e adiciona informações específicas de um detento, como crime cometido, data de prisão e tempo de pena.",
+    "input": [
+      {
+        "id": 1,
+        "socialSecurity": "188448443",
+        "birthDate": "1971-12-25",
+        "name": "Walter White",
+        "email": "wwhite@gmail.com",
+        "gender": "Male",
+        "commitedCrime": "Drug trafficking",
+        "arrestDate": "2020-05-10",
+        "sentenceYears": 10
+      }
+    ],
+    "output": [
+      {
+        "inmate": "Objeto Inmate com dados completos herdados de Person"
+      }
+    ],
+    "rules": [
+      "Herda todos os atributos de Person",
+      "O campo commitedCrime deve descrever o crime cometido",
+      "A data de prisão deve ser anterior ou igual à data atual",
+      "O tempo de sentença deve ser maior que zero",
+      "O Social Security deve ser único no sistema"
+    ]
+  }
+]

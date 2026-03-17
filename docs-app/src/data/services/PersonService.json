@@ -1,0 +1,123 @@
+[
+  {
+    "name": "createPerson",
+    "objective": "Criar uma nova pessoa no sistema",
+    "description": "Recebe uma entidade Person e salva no banco de dados. Antes de salvar, verifica se já existe uma pessoa com o mesmo Social Security para evitar duplicidade.",
+    "input": [
+      {
+        "person": {
+          "socialSecurity": "string",
+          "name": "string",
+          "email": "string",
+          "birthDate": "date"
+        }
+      }
+    ],
+    "output": [
+      {
+        "person": "Objeto Person salvo no banco"
+      }
+    ],
+    "rules": [
+      "O Social Security não pode estar duplicado",
+      "Caso já exista, lança exceção DatabaseException",
+      "Os dados da pessoa devem estar válidos antes de salvar"
+    ]
+  },
+  {
+    "name": "createPersonWithAddress",
+    "objective": "Criar uma pessoa junto com seus endereços",
+    "description": "Converte um PersonDto em entidade, salva a pessoa e em seguida percorre a lista de endereços associados criando cada um vinculado ao ID da pessoa.",
+    "input": [
+      {
+        "personDto": {
+          "name": "string",
+          "email": "string",
+          "birthDate": "date",
+          "socialSecurity": "string",
+          "addresses": "lista de AddressDto"
+        }
+      }
+    ],
+    "output": [
+      {
+        "person": "Objeto Person com ID gerado"
+      }
+    ],
+    "rules": [
+      "A pessoa deve ser criada antes dos endereços",
+      "Os endereços devem ser vinculados ao ID da pessoa",
+      "A operação é transacional (se falhar, nada é salvo)",
+      "O Social Security não pode estar duplicado"
+    ]
+  },
+  {
+    "name": "findAll",
+    "objective": "Buscar todas as pessoas cadastradas",
+    "description": "Retorna uma lista com todas as pessoas armazenadas no banco de dados.",
+    "input": [],
+    "output": [
+      {
+        "persons": "Lista de objetos Person"
+      }
+    ],
+    "rules": [
+      "Retorna lista vazia caso não existam registros"
+    ]
+  },
+  {
+    "name": "findById",
+    "objective": "Buscar uma pessoa pelo ID",
+    "description": "Busca uma pessoa no banco de dados pelo ID informado. Caso não encontre, lança exceção.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [
+      {
+        "person": "Objeto Person encontrado"
+      }
+    ],
+    "rules": [
+      "O ID deve existir no banco",
+      "Caso não exista, lança ResourceNotFoundException"
+    ]
+  },
+  {
+    "name": "updatePerson",
+    "objective": "Atualizar dados de uma pessoa",
+    "description": "Busca a pessoa pelo ID, atualiza seus dados com base no PersonUpdateDto e salva as alterações no banco.",
+    "input": [
+      {
+        "id": 1,
+        "personUpdateDto": "dados atualizados"
+      }
+    ],
+    "output": [
+      {
+        "person": "Objeto Person atualizado"
+      }
+    ],
+    "rules": [
+      "O ID deve existir",
+      "Os dados são atualizados parcialmente via mapper",
+      "Caso não encontre a pessoa, lança ResourceNotFoundException"
+    ]
+  },
+  {
+    "name": "deletePerson",
+    "objective": "Deletar uma pessoa pelo ID",
+    "description": "Remove uma pessoa do banco de dados com base no ID informado.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [],
+    "rules": [
+      "O ID deve existir",
+      "Caso não exista, lança ResourceNotFoundException"
+    ]
+  }
+]

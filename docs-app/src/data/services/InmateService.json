@@ -1,0 +1,51 @@
+[
+  {
+    "name": "findAll",
+    "objective": "Listar todos os detentos cadastrados",
+    "description": "Busca e retorna todos os registros de detentos armazenados no banco de dados.",
+    "input": [],
+    "output": [
+      {
+        "inmates": "Lista de objetos Inmate"
+      }
+    ],
+    "rules": [
+      "Retorna uma lista vazia caso não existam registros"
+    ]
+  },
+  {
+    "name": "findById",
+    "objective": "Buscar um detento pelo ID",
+    "description": "Busca um detento no banco de dados utilizando o ID informado. Caso não encontre, lança uma exceção.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [
+      {
+        "inmate": "Objeto Inmate encontrado"
+      }
+    ],
+    "rules": [
+      "O ID deve existir no banco de dados",
+      "Caso não exista, lança ResourceNotFoundException"
+    ]
+  },
+  {
+    "name": "deleteInmate",
+    "objective": "Remover um detento do sistema",
+    "description": "Remove um detento do banco de dados com base no ID informado. Antes da remoção, verifica se o registro existe.",
+    "input": [
+      {
+        "id": 1
+      }
+    ],
+    "output": [],
+    "rules": [
+      "O ID deve existir no banco de dados",
+      "Caso não exista, lança ResourceNotFoundException",
+      "Se houver violação de integridade (relacionamentos), lança DatabaseException"
+    ]
+  }
+]
