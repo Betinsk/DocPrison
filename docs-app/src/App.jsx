@@ -1,6 +1,6 @@
 
 import './App.css'
-import Home from './pages/home'
+import Home from './pages/Home'
 import Information from './pages/Information'
 import InformationController from './pages/InformationController'
 import InformationService from './pages/InformationService'
