@@ -1,9 +1,26 @@
 
-.col-2{
-  border: 1px solid black;
+
+
+/* sidebar geral */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background-color: #bdbdbd;
+  padding: 15px;
+  border-right: 1px solid #eaeaea;
 }
 
-.col-10{
-  border: 1px solid black;
+/* botão principal */
+.nav-link {
+  transition: all 0.2s ease;
 }
 
+.nav-link:hover {
+ background-color: #bdbdbd;
+}
+
+/* dropdown itens */
+.dropdown-item:hover {
+ background-color: #dadada;
+  padding-left: 20px;
+}

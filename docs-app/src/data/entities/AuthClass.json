@@ -1,0 +1,51 @@
+[
+  {
+    "name": "login",
+    "objective": "Autenticar um usuário e gerar um token JWT",
+    "description": "Recebe as credenciais do usuário (email e senha), valida os dados utilizando o sistema de autenticação e retorna um token JWT que será utilizado para acessar rotas protegidas.",
+    "input": [
+      {
+        "email": "user@email.com",
+        "password": "123456"
+      }
+    ],
+    "rules": [
+      "O usuário deve estar previamente cadastrado",
+      "As credenciais devem ser válidas",
+      "O token gerado possui tempo de expiração",
+      "O token deve ser enviado no header Authorization como Bearer Token"
+    ]
+  },
+  {
+    "name": "register",
+    "objective": "Registrar um novo usuário no sistema",
+    "description": "Recebe os dados do usuário, realiza validações, criptografa a senha e persiste as informações no banco de dados.",
+    "input": [
+      {
+        "name": "Walter White",
+        "email": "user@email.com",
+        "password": "123456"
+      }
+    ],
+    "rules": [
+      "O email deve ser único no sistema",
+      "A senha deve ser armazenada de forma criptografada",
+      "Os dados devem ser válidos antes da persistência"
+    ]
+  },
+  {
+    "name": "validateToken",
+    "objective": "Validar um token JWT recebido em uma requisição",
+    "description": "Intercepta requisições HTTP, extrai o token do header Authorization, valida sua assinatura e verifica sua expiração para permitir ou negar o acesso.",
+    "input": [
+      {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+    ],
+    "rules": [
+      "O token deve estar presente no header Authorization",
+      "O token deve ser válido e não expirado",
+      "Caso inválido, o acesso à rota deve ser negado"
+    ]
+  }
+]

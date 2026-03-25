@@ -1,0 +1,43 @@
+{
+  "service": "JwtService",
+  "package": "com.federal.prision.auth",
+  "description": "Serviço responsável pela geração e validação de tokens JWT utilizados na autenticação da aplicação.",
+  "methods": [
+    {
+      "name": "generateToken",
+      "objective": "Gerar um token JWT para um usuário autenticado",
+      "description": "Cria um token JWT contendo informações do usuário (subject) e tempo de expiração, assinando o token com uma chave secreta.",
+      "input": {
+        "type": "String (email)",
+        "example": "user@email.com"
+      },
+      "output": {
+        "type": "String (JWT Token)",
+        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      },
+      "rules": [
+        "O token deve conter o subject (email do usuário)",
+        "O token deve possuir data de expiração",
+        "O token deve ser assinado com chave secreta segura"
+      ]
+    },
+    {
+      "name": "validateToken",
+      "objective": "Validar um token JWT",
+      "description": "Verifica se o token é válido, se não foi adulterado e se ainda está dentro do prazo de expiração.",
+      "input": {
+        "type": "String (JWT Token)",
+        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      },
+      "output": {
+        "type": "Boolean",
+        "example": true
+      },
+      "rules": [
+        "O token deve estar corretamente assinado",
+        "O token não pode estar expirado",
+        "Caso inválido, deve retornar falso ou lançar exceção"
+      ]
+    }
+  ]
+}

@@ -40,4 +40,28 @@
       "O método retorna o subject armazenado no token"
     ]
   }
+  ,
+  {
+    "name": "loadUserByUsername",
+    "objective": "Carregar os dados do usuário para autenticação",
+    "description": "Busca um usuário no banco de dados utilizando o email e retorna um objeto UserDetails utilizado pelo Spring Security durante o processo de autenticação.",
+    "input": [
+      {
+        "email": "user@email.com"
+      }
+    ],
+    "output": [
+      {
+        "userDetails": "Objeto UserDetails contendo informações do usuário autenticado"
+      }
+    ],
+    "rules": [
+      "O email deve existir no banco de dados",
+      "A busca é realizada através do UserRepository",
+      "Caso o usuário não seja encontrado, lança UsernameNotFoundException",
+      "O retorno deve implementar a interface UserDetails",
+      "Os dados retornados são utilizados pelo Spring Security para autenticação e autorização"
+    ]
+  }
+
 ]

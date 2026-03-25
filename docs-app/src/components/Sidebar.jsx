@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import DropDownMenu from "./DropdownMenu";
+import DropDownMenuAuth from "./DropdownMenuAuth";
 
 import { types } from "../service/types";
 
@@ -22,6 +23,25 @@ export default function Sidebar() {
       navigate(route, { state: { className: data } });
     });
   }
+
+    function handleSelectAuth(className) {
+    loadInfData(className).then((data) => {
+      if (!data) return;
+      console.log(data)
+
+    let route = "/information";
+
+    if (className.endsWith("Controller")) {
+        route = "/informationController";
+    } else if (className.endsWith("Service")) {
+        route = "/informationService";
+      } else if (className.endsWith("Filter")) {
+        route = "/informationService";
+    }
+      navigate(route, { state: { className: data } });
+    });
+  }
+
 
   async function loadInfData(className) {
     try {
@@ -78,9 +98,15 @@ export default function Sidebar() {
 
   return (
     <>
+      <h5 className="text-center">Funcionalidades e classes</h5>
       <DropDownMenu type="Person" onSelect={handleSelect} />
       <DropDownMenu type="Address" onSelect={handleSelect} />
       <DropDownMenu type="Inmate" onSelect={handleSelect} />
+      <DropDownMenu type="User" onSelect={handleSelect} />
+
+      <h5 className="text-center">Autenticação</h5>
+      <DropDownMenuAuth type="Auth" onSelect={handleSelectAuth} />
+      
 
     </>
   )

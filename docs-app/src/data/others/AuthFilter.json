@@ -1,0 +1,23 @@
+[
+  {
+    "name": "doFilterInternal",
+    "objective": "Interceptar requisições HTTP e autenticar usuários via JWT",
+    "description": "Intercepta cada requisição HTTP, extrai o token JWT do header Authorization, valida o token e, caso válido, autentica o usuário no contexto de segurança do Spring.",
+    "input": [
+      {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }
+    ],
+    "output": [],
+    "rules": [
+      "O header Authorization deve estar presente na requisição",
+      "O token deve iniciar com o prefixo 'Bearer '",
+      "O token é extraído removendo o prefixo 'Bearer '",
+      "O email do usuário é extraído a partir do token JWT",
+      "O usuário deve existir no sistema (UserDetailsService)",
+      "A autenticação só ocorre se não houver autenticação prévia no contexto",
+      "Caso válido, o usuário é autenticado no SecurityContextHolder",
+      "A requisição deve sempre seguir no filtro (filterChain.doFilter), mesmo sem token"
+    ]
+  }
+]

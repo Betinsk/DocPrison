@@ -1,5 +1,5 @@
-export default function DropDownMenu({ type, onSelect }) {
-  const options = ["Class", "Repository", "Controller", "Service"];
+export default function DropDownMenuAuth({ type, onSelect }) {
+  const options = ["Class", "Filter", "Controller", "Service"];
 
   return (
     <li className="nav-item dropdown w-100 mb-2">
