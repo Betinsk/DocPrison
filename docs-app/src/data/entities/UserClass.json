@@ -1,0 +1,39 @@
+[
+  {
+    "name": "User",
+    "objective": "Representar um usuário autenticável no sistema",
+    "description": "Entidade responsável pela autenticação e autorização no sistema. Está vinculada a uma Person e define credenciais de acesso, como email, senha e papel (role). Implementa UserDetails para integração com Spring Security.",
+    "input": [
+      {
+        "id": 1,
+        "email": "user@email.com",
+        "password": "123456",
+        "role": "ADMIN",
+       
+          "id": 1,
+          "name": "Walter White",
+          "email": "wwhite@gmail.com",
+          "birthDate": "1971-12-25",
+          "gender": "Male",
+          "socialSecurity": "188448443"
+        }
+      
+    ],
+    "output": [
+      {
+        "user": "Objeto User contendo dados de autenticação e associação com Person"
+      }
+    ],
+    "rules": [
+      "O campo email deve ser único no sistema",
+      "O campo email é obrigatório",
+      "O campo password é obrigatório",
+      "O campo role deve ser um valor válido do enum Role",
+      "Cada User deve estar associado a exatamente uma Person",
+      "A associação com Person é obrigatória (OneToOne)",
+      "O método getAuthorities retorna a role do usuário como permissão",
+      "A conta do usuário é sempre considerada ativa, não expirada e não bloqueada",
+      "O método getUsername deve retornar o email do usuário (ajuste necessário no código)"
+    ]
+  }
+]

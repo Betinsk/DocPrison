@@ -1,0 +1,32 @@
+[
+  {
+    "name": "AddressRepository",
+    "objective": "Realizar operações de acesso a dados para a entidade Address",
+    "description": "Interface responsável pelo acesso ao banco de dados para Address, utilizando métodos padrão do JpaRepository.",
+    "input": [
+      {
+        "method": "save",
+        "street": "Rua A",
+        "city": "Belo Horizonte"
+      },
+      {
+        "method": "findById",
+        "id": 1
+      },
+      {
+        "method": "findAll",
+        "page": 0
+      },
+      {
+        "method": "deleteById",
+        "id": 1
+      }
+    ],
+    "rules": [
+      "As operações CRUD são fornecidas automaticamente pelo JpaRepository",
+      "O ID do Address é do tipo Long",
+      "Nenhuma implementação manual é necessária",
+      "Os dados devem respeitar as validações da entidade Address"
+    ]
+  }
+]

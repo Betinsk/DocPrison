@@ -18,10 +18,10 @@ export default function NavBar() {
                 Entitidades
               </a>
               <ul className="dropdown-menu">
-                <li><a className="dropdown-item" href="#">Action</a></li>
-                <li><a className="dropdown-item" href="#">Another action</a></li>
+                <li><a className="dropdown-item" href="#">Person</a></li>
+                <li><a className="dropdown-item" href="#">Inmate</a></li>
                 <li><hr className="dropdown-divider"></hr></li>
-                <li><a className="dropdown-item" href="#">Something else here</a></li>
+                <li><a className="dropdown-item" href="#">Address</a></li>
               </ul>
             </li>
             <li className="nav-item">

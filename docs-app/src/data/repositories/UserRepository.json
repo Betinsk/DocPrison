@@ -1,0 +1,32 @@
+[
+  {
+    "name": "UserRepository",
+    "objective": "Realizar operações de acesso a dados para a entidade User",
+    "description": "Interface responsável pela comunicação com o banco de dados para User. Fornece métodos CRUD e busca por email.",
+    "input": [
+      {
+        "method": "findByEmail",
+        "email": "user@email.com"
+      },
+      {
+        "method": "save",
+        "email": "user@email.com"
+      },
+      {
+        "method": "findById",
+        "id": 1
+      },
+      {
+        "method": "deleteById",
+        "id": 1
+      }
+    ],
+    "rules": [
+      "O método findByEmail retorna no máximo um usuário",
+      "O email deve ser único no sistema",
+      "Os métodos CRUD são herdados do JpaRepository",
+      "O retorno pode ser vazio caso não encontre dados",
+      "Não é necessário implementar a interface manualmente"
+    ]
+  }
+]
