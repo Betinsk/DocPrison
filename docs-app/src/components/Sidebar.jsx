@@ -3,7 +3,7 @@ import DropDownMenu from "./DropdownMenu";
 import DropDownMenuAuth from "./DropdownMenuAuth";
 import { types } from "../service/types";
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const navigate = useNavigate();
 
   function handleSelect(className) {
@@ -15,6 +15,7 @@ export default function Sidebar() {
       else if (className.endsWith("Service")) route = "/informationService";
 
       navigate(route, { state: { className: data } });
+      onNavigate?.(); // fecha sidebar no mobile após navegar
     });
   }
 
@@ -28,6 +29,7 @@ export default function Sidebar() {
       else if (className.endsWith("Filter")) route = "/informationService";
 
       navigate(route, { state: { className: data } });
+      onNavigate?.();
     });
   }
 
@@ -48,13 +50,12 @@ export default function Sidebar() {
   return (
     <div style={{
       background: "#0f1117",
-      borderRadius: "10px",
       padding: "16px 10px",
-      minHeight: "100vh",
+      minHeight: "100%",
       fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
     }}>
 
-      {/* Logo / título */}
+      {/* Header */}
       <div style={{
         display: "flex",
         alignItems: "center",
@@ -75,7 +76,7 @@ export default function Sidebar() {
         }}>docs</span>
       </div>
 
-      {/* Seção principal */}
+      {/* Funcionalidades */}
       <div style={{ marginBottom: "20px" }}>
         <p style={{
           color: "#475569",
@@ -88,17 +89,15 @@ export default function Sidebar() {
         }}>
           Funcionalidades
         </p>
-
         <DropDownMenu type="Person"  onSelect={handleSelect} />
         <DropDownMenu type="Address" onSelect={handleSelect} />
         <DropDownMenu type="Inmate"  onSelect={handleSelect} />
         <DropDownMenu type="User"    onSelect={handleSelect} />
       </div>
 
-      {/* Divisor */}
       <div style={{ borderTop: "1px solid #1e2130", margin: "8px 0 16px" }} />
 
-      {/* Seção auth */}
+      {/* Autenticação */}
       <div>
         <p style={{
           color: "#475569",
@@ -111,17 +110,11 @@ export default function Sidebar() {
         }}>
           Autenticação
         </p>
-
         <DropDownMenuAuth type="Auth" onSelect={handleSelectAuth} />
       </div>
 
-      {/* Legenda de cores */}
-      <div style={{
-        marginTop: "auto",
-        paddingTop: "24px",
-        borderTop: "1px solid #1e2130",
-        marginTop: "32px",
-      }}>
+      {/* Legenda */}
+      <div style={{ borderTop: "1px solid #1e2130", marginTop: "32px", paddingTop: "16px" }}>
         {[
           { color: "#3b82f6", label: "Entity" },
           { color: "#10b981", label: "Controller" },
