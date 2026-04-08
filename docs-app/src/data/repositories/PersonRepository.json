@@ -1,23 +1,83 @@
-[
-  {
-    "name": "existsBySocialSecurity",
-    "objective": "Verificar se já existe uma pessoa cadastrada com o Social Security informado",
-    "description": "Consulta o banco de dados para verificar se existe um registro de pessoa com o mesmo Social Security. É utilizado para evitar duplicidade de cadastro.",
-    "input": [
-      {
-        "socialSecurity": "188448443"
-      }
-    ],
-    "output": [
-      {
-        "exists": true
-      }
-    ],
-    "rules": [
-      "O Social Security não pode ser nulo",
-      "O Social Security deve possuir formato válido",
-      "Caso já exista no banco, o método retorna true",
-      "Caso não exista, o método retorna false"
-    ]
-  }
-]
+{
+  "repository": "PersonRepository",
+  "description": "Interface JPA que estende JpaRepository, expondo operações CRUD padrão via proxy dinâmico do Spring Data JPA. Declara um método customizado derivado de query (derived query method).",
+  "extends": "JpaRepository",
+  "annotations": ["@Repository"],
+  "methods": [
+    {
+      "name": "existsBySocialSecurity",
+      "origin": "custom",
+      "objective": "Verificar se já existe uma Person com o socialSecurity informado.",
+      "description": "Derived query method — o Spring Data JPA gera automaticamente a query 'SELECT COUNT(*) > 0 FROM person WHERE social_security = ?' em tempo de execução. Utilizado em PersonService.createPerson() para garantir unicidade antes do save.",
+      "input": {
+        "type": "String",
+        "fields": [{ "name": "socialSecurity", "type": "String", "required": true }],
+        "example": { "socialSecurity": "188448443" }
+      },
+      "output": { "type": "boolean", "example": false },
+      "exceptions": [],
+      "rules": [
+        "Retorna true se já existir uma Person com o socialSecurity — dispara DatabaseException no Service",
+        "A unicidade também é garantida em nível de banco via @Column(unique=true) na entidade"
+      ]
+    },
+    {
+      "name": "save",
+      "origin": "JpaRepository",
+      "objective": "Persistir ou atualizar uma entidade Person.",
+      "description": "Herdado de JpaRepository. Executa INSERT se a entidade é nova (id null) ou MERGE se já existe. Retorna a entidade gerenciada com ID gerado pelo banco.",
+      "input": {
+        "type": "Person",
+        "fields": [{ "name": "person", "type": "Person", "required": true }],
+        "example": { "socialSecurity": "188448443", "name": "Walter White" }
+      },
+      "output": { "type": "Person", "example": { "id": 1, "socialSecurity": "188448443" } },
+      "exceptions": [
+        { "type": "DataIntegrityViolationException", "condition": "violação de constraint no banco (ex: socialSecurity duplicado em nível de DB)" }
+      ],
+      "rules": []
+    },
+    {
+      "name": "findById",
+      "origin": "JpaRepository",
+      "objective": "Buscar uma Person pelo ID.",
+      "description": "Herdado de JpaRepository. Retorna Optional — vazio se o ID não existir. No PersonService é encadeado com .orElseThrow() para lançar ResourceNotFoundException.",
+      "input": {
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true }],
+        "example": { "id": 1 }
+      },
+      "output": { "type": "Optional", "example": { "id": 1, "name": "Walter White" } },
+      "exceptions": [],
+      "rules": ["Nunca lança exceção diretamente — retorna Optional vazio se não encontrado"]
+    },
+    {
+      "name": "findAll",
+      "origin": "JpaRepository",
+      "objective": "Recuperar todas as Persons.",
+      "description": "Herdado de JpaRepository. Executa SELECT * FROM person. Sem paginação.",
+      "input": { "type": null, "fields": [], "example": null },
+      "output": { "type": "List", "example": [{ "id": 1 }, { "id": 2 }] },
+      "exceptions": [],
+      "rules": ["Retorna lista vazia se não houver registros — nunca retorna null"]
+    },
+    {
+      "name": "deleteById",
+      "origin": "JpaRepository",
+      "objective": "Remover uma Person pelo ID.",
+      "description": "Herdado de JpaRepository. No PersonService é chamado dentro de try/catch para capturar EmptyResultDataAccessException e relançar como ResourceNotFoundException.",
+      "input": {
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true }],
+        "example": { "id": 1 }
+      },
+      "output": { "type": "void", "example": null },
+      "exceptions": [
+        { "type": "EmptyResultDataAccessException", "condition": "ID não encontrado — capturado no Service e relançado como ResourceNotFoundException" }
+      ],
+      "rules": [
+        "CascadeType.ALL na entidade garante deleção em cascata de Address e Mugshot"
+      ]
+    }
+  ]
+}

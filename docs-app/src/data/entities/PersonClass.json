@@ -1,14 +1,121 @@
-[
-  {
-    "name": "createPerson",
-    "objective": "Registrar uma nova pessoa no sistema",
-    "description": "Recebe os dados de uma pessoa e realiza a persistência no banco de dados através do repositório.",
-    "input": [{
+{
+  "entity": "Person",
+  "table": "person",
+  "description": "Entidade JPA que representa uma pessoa no sistema prisional. Classe base da hierarquia de herança (JOINED), podendo ser estendida por entidades como Inmate e User. Possui relacionamentos OneToMany com Address e Mugshot.",
+  "annotations": ["@Entity", "@Inheritance(JOINED)"],
+  "fields": [
+    {
+      "name": "id",
+      "type": "Long",
+      "annotations": ["@Id", "@GeneratedValue(IDENTITY)"],
+      "nullable": false,
+      "unique": true,
+      "description": "Chave primária gerada automaticamente pelo banco via IDENTITY strategy."
+    },
+    {
+      "name": "socialSecurity",
+      "type": "String",
+      "annotations": ["@Column(nullable=false, unique=true)"],
+      "nullable": false,
+      "unique": true,
+      "description": "Documento de identificação único da pessoa. Constraint de unicidade aplicada tanto em nível de entidade (@Column unique) quanto validada no PersonService antes do save."
+    },
+    {
+      "name": "birthDate",
+      "type": "LocalDate",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Data de nascimento no formato ISO 8601 (yyyy-MM-dd). Mapeado como LocalDate pelo JPA/Hibernate."
+    },
+    {
+      "name": "name",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Nome completo da pessoa."
+    },
+    {
+      "name": "email",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Endereço de e-mail da pessoa."
+    },
+    {
+      "name": "gender",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Gênero da pessoa."
+    },
+    {
+      "name": "profilePictureUrl",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "URL da foto de perfil armazenada no Amazon S3 via S3Service."
+    },
+    {
+      "name": "addresses",
+      "type": "List<Address>",
+      "annotations": ["@OneToMany(mappedBy=person, cascade=ALL, orphanRemoval=true)", "@JsonManagedReference"],
+      "nullable": true,
+      "unique": false,
+      "description": "Lista de endereços associados. CascadeType.ALL propaga operações de persistência e deleção. orphanRemoval=true remove endereços órfãos automaticamente. @JsonManagedReference evita recursão na serialização JSON."
+    },
+    {
+      "name": "mugshots",
+      "type": "List<Mugshot>",
+      "annotations": ["@OneToMany(mappedBy=person, cascade=ALL)", "@JsonManagedReference"],
+      "nullable": true,
+      "unique": false,
+      "description": "Lista de fotos de identificação (mugshots) associadas. CascadeType.ALL propaga operações de persistência e deleção."
+    }
+  ],
+  "relationships": [
+    {
+      "type": "OneToMany",
+      "target": "Address",
+      "mappedBy": "person",
+      "cascade": "ALL",
+      "orphanRemoval": true,
+      "description": "Uma Person pode ter múltiplos Address. A deleção da Person remove todos os endereços associados."
+    },
+    {
+      "type": "OneToMany",
+      "target": "Mugshot",
+      "mappedBy": "person",
+      "cascade": "ALL",
+      "orphanRemoval": false,
+      "description": "Uma Person pode ter múltiplos Mugshot. A deleção da Person remove todos os mugshots associados."
+    }
+  ],
+  "inheritance": {
+    "strategy": "JOINED",
+    "description": "Herança do tipo JOINED — cada subclasse (ex: Inmate, User) possui sua própria tabela no banco que é juntada via JOIN com a tabela person na consulta."
+  },
+  "example": {
+    "id": 1,
+    "socialSecurity": "188448443",
+    "name": "Walter White",
+    "email": "wwhite@gmail.com",
+    "birthDate": "1971-12-25",
+    "gender": "M",
+    "profilePictureUrl": "https://s3.amazonaws.com/bucket/wwhite.jpg",
+    "addresses": [
+      {
         "id": 1,
-        "socialSecurity": "188448443",
-        "birthDate": "1971-12-25",
-        "name": "Whiter White",
-        "email": "WWhite@gmail.com"}],
-    "rules": ["Os dados da pessoa devem ser válidos", "Pode conter múltiplos endereços associados"]
+        "streetAddress": "308 Negra Arroyo Lane",
+        "city": "Albuquerque",
+        "state": "New Mexico",
+        "country": "EUA"
+      }
+    ],
+    "mugshots": []
   }
-]
+}

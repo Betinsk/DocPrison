@@ -1,123 +1,179 @@
-[
-  {
-    "name": "createPerson",
-    "objective": "Criar uma nova pessoa no sistema",
-    "description": "Recebe uma entidade Person e salva no banco de dados. Antes de salvar, verifica se já existe uma pessoa com o mesmo Social Security para evitar duplicidade.",
-    "input": [
-      {
-        "person": {
-          "socialSecurity": "string",
-          "name": "string",
-          "email": "string",
-          "birthDate": "date"
+{
+  "service": "PersonService",
+  "description": "Camada de negócio responsável pelas operações sobre a entidade Person. Orquestra PersonRepository, AddressService, PersonMapper e S3Service. Métodos transacionais utilizam @Transactional do Jakarta para garantir atomicidade.",
+  "annotations": ["@Service"],
+  "methods": [
+    {
+      "name": "createPerson",
+      "objective": "Persistir uma nova entidade Person após validação de unicidade do socialSecurity.",
+      "description": "Verifica via personRepository.existsBySocialSecurity() se o socialSecurity já existe. Em caso positivo lança DatabaseException. Caso contrário, persiste via personRepository.save() e retorna a entidade com ID gerado.",
+      "annotations": [],
+      "input": {
+        "type": "Person",
+        "fields": [
+          { "name": "socialSecurity", "type": "String",    "required": true, "constraint": "@Column(unique=true)" },
+          { "name": "name",           "type": "String",    "required": false },
+          { "name": "email",          "type": "String",    "required": false },
+          { "name": "birthDate",      "type": "LocalDate", "required": false },
+          { "name": "gender",         "type": "String",    "required": false }
+        ],
+        "example": { "socialSecurity": "188448443", "name": "Walter White", "birthDate": "1971-12-25" }
+      },
+      "output": {
+        "type": "Person",
+        "example": { "id": 1, "socialSecurity": "188448443", "name": "Walter White" }
+      },
+      "exceptions": [
+        { "type": "DatabaseException", "condition": "socialSecurity já registrado — personRepository.existsBySocialSecurity() retorna true" }
+      ],
+      "rules": [
+        "Não é @Transactional diretamente — é chamado dentro de createPersonWithAddress que já é @Transactional",
+        "O ID é gerado pelo banco via @GeneratedValue(strategy=GenerationType.IDENTITY)"
+      ]
+    },
+    {
+      "name": "createPersonWithAddress",
+      "objective": "Persistir uma Person e seus endereços em operação atômica.",
+      "description": "Anotado com @Transactional. Mapeia PersonDto → Person via PersonMapper.fromDto(), delega a persistência ao createPerson() e itera sobre a lista de AddressDto criando cada endereço via AddressService.createAddress() vinculado ao ID da Person. Qualquer falha em qualquer etapa provoca rollback completo.",
+      "annotations": ["@Transactional"],
+      "input": {
+        "type": "PersonDto",
+        "fields": [
+          { "name": "socialSecurity", "type": "String",         "required": true },
+          { "name": "name",           "type": "String",         "required": false },
+          { "name": "email",          "type": "String",         "required": false },
+          { "name": "birthDate",      "type": "String",         "format": "yyyy-MM-dd", "required": false },
+          { "name": "gender",         "type": "String",         "required": false },
+          { "name": "addresses",      "type": "List","required": false }
+        ],
+        "example": {
+          "socialSecurity": "188448443",
+          "name": "Walter White",
+          "addresses": [{ "streetAddress": "308 Negra Arroyo Lane", "city": "Albuquerque" }]
         }
-      }
-    ],
-    "output": [
-      {
-        "person": "Objeto Person salvo no banco"
-      }
-    ],
-    "rules": [
-      "O Social Security não pode estar duplicado",
-      "Caso já exista, lança exceção DatabaseException",
-      "Os dados da pessoa devem estar válidos antes de salvar"
-    ]
-  },
-  {
-    "name": "createPersonWithAddress",
-    "objective": "Criar uma pessoa junto com seus endereços",
-    "description": "Converte um PersonDto em entidade, salva a pessoa e em seguida percorre a lista de endereços associados criando cada um vinculado ao ID da pessoa.",
-    "input": [
-      {
-        "personDto": {
-          "name": "string",
-          "email": "string",
-          "birthDate": "date",
-          "socialSecurity": "string",
-          "addresses": "lista de AddressDto"
-        }
-      }
-    ],
-    "output": [
-      {
-        "person": "Objeto Person com ID gerado"
-      }
-    ],
-    "rules": [
-      "A pessoa deve ser criada antes dos endereços",
-      "Os endereços devem ser vinculados ao ID da pessoa",
-      "A operação é transacional (se falhar, nada é salvo)",
-      "O Social Security não pode estar duplicado"
-    ]
-  },
-  {
-    "name": "findAll",
-    "objective": "Buscar todas as pessoas cadastradas",
-    "description": "Retorna uma lista com todas as pessoas armazenadas no banco de dados.",
-    "input": [],
-    "output": [
-      {
-        "persons": "Lista de objetos Person"
-      }
-    ],
-    "rules": [
-      "Retorna lista vazia caso não existam registros"
-    ]
-  },
-  {
-    "name": "findById",
-    "objective": "Buscar uma pessoa pelo ID",
-    "description": "Busca uma pessoa no banco de dados pelo ID informado. Caso não encontre, lança exceção.",
-    "input": [
-      {
-        "id": 1
-      }
-    ],
-    "output": [
-      {
-        "person": "Objeto Person encontrado"
-      }
-    ],
-    "rules": [
-      "O ID deve existir no banco",
-      "Caso não exista, lança ResourceNotFoundException"
-    ]
-  },
-  {
-    "name": "updatePerson",
-    "objective": "Atualizar dados de uma pessoa",
-    "description": "Busca a pessoa pelo ID, atualiza seus dados com base no PersonUpdateDto e salva as alterações no banco.",
-    "input": [
-      {
-        "id": 1,
-        "personUpdateDto": "dados atualizados"
-      }
-    ],
-    "output": [
-      {
-        "person": "Objeto Person atualizado"
-      }
-    ],
-    "rules": [
-      "O ID deve existir",
-      "Os dados são atualizados parcialmente via mapper",
-      "Caso não encontre a pessoa, lança ResourceNotFoundException"
-    ]
-  },
-  {
-    "name": "deletePerson",
-    "objective": "Deletar uma pessoa pelo ID",
-    "description": "Remove uma pessoa do banco de dados com base no ID informado.",
-    "input": [
-      {
-        "id": 1
-      }
-    ],
-    "output": [],
-    "rules": [
-      "O ID deve existir",
-      "Caso não exista, lança ResourceNotFoundException"
-    ]
-  }
-]
+      },
+      "output": {
+        "type": "Person",
+        "example": { "id": 1, "socialSecurity": "188448443", "name": "Walter White" }
+      },
+      "exceptions": [
+        { "type": "DatabaseException",        "condition": "socialSecurity já registrado" },
+        { "type": "ResourceNotFoundException", "condition": "falha ao vincular endereço — Person ID não encontrado" }
+      ],
+      "rules": [
+        "@Transactional garante rollback completo se qualquer etapa falhar",
+        "A Person é criada antes dos endereços — os endereços dependem do ID gerado",
+        "Mapeamento PersonDto → Person via PersonMapper (MapStruct/manual)"
+      ]
+    },
+    {
+      "name": "addAddress",
+      "objective": "Adicionar um novo endereço a uma Person existente.",
+      "description": "Anotado com @Transactional. Recupera a Person via findById() — lança ResourceNotFoundException se ausente — converte AddressDto via AddressService.fromDto(), persiste via AddressService.createAddress() e retorna a Person atualizada via findById().",
+      "annotations": ["@Transactional"],
+      "input": {
+        "type": "AddressDto",
+        "fields": [
+          { "name": "id",            "type": "Long",   "required": true },
+          { "name": "streetAddress", "type": "String", "required": true },
+          { "name": "city",          "type": "String", "required": true }
+        ],
+        "example": { "id": 1, "streetAddress": "308 Negra Arroyo Lane", "city": "Albuquerque" }
+      },
+      "output": {
+        "type": "Person",
+        "example": { "id": 1, "name": "Walter White", "addresses": [{ "streetAddress": "308 Negra Arroyo Lane" }] }
+      },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Person com o ID informado não encontrada" }
+      ],
+      "rules": [
+        "@Transactional garante atomicidade da operação",
+        "Retorna a Person re-buscada do banco após inserção do endereço (segundo findById)"
+      ]
+    },
+    {
+      "name": "findAll",
+      "objective": "Recuperar todas as Persons persistidas.",
+      "description": "Executa personRepository.findAll() sem paginação. Retorna lista vazia quando não há registros.",
+      "annotations": [],
+      "input": { "type": null, "fields": [], "example": null },
+      "output": {
+        "type": "List",
+        "example": [{ "id": 1, "name": "Walter White" }, { "id": 2, "name": "Jesse Pinkman" }]
+      },
+      "exceptions": [],
+      "rules": [
+        "Sem Pageable — pode causar problema de performance com grande volume",
+        "Nunca retorna null — retorna lista vazia se não houver registros"
+      ]
+    },
+    {
+      "name": "findById",
+      "objective": "Recuperar uma Person pelo ID.",
+      "description": "Executa personRepository.findById(id).orElseThrow() — lança ResourceNotFoundException com mensagem 'Person not found. Id: {id}' se o registro não existir.",
+      "annotations": [],
+      "input": {
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true }],
+        "example": { "id": 1 }
+      },
+      "output": {
+        "type": "Person",
+        "example": { "id": 1, "socialSecurity": "188448443", "name": "Walter White" }
+      },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Nenhuma Person encontrada com o ID informado" }
+      ],
+      "rules": ["O ID deve ser do tipo Long"]
+    },
+    {
+      "name": "updatePerson",
+      "objective": "Atualizar parcialmente os dados de uma Person existente.",
+      "description": "Recupera a Person via personRepository.findById().orElseThrow(). Aplica atualização parcial via PersonMapper.updateFromDto() (PATCH semantics). Persiste as alterações via personRepository.save() e retorna a entidade atualizada.",
+      "annotations": [],
+      "input": {
+        "type": "PersonUpdateDto",
+        "fields": [
+          { "name": "id",        "type": "Long",   "required": true },
+          { "name": "name",      "type": "String", "required": false },
+          { "name": "email",     "type": "String", "required": false },
+          { "name": "birthDate", "type": "LocalDate", "required": false },
+          { "name": "gender",    "type": "String", "required": false }
+        ],
+        "example": { "id": 1, "name": "Walter H. White", "email": "heisenberg@gmail.com" }
+      },
+      "output": {
+        "type": "Person",
+        "example": { "id": 1, "name": "Walter H. White", "email": "heisenberg@gmail.com" }
+      },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Nenhuma Person encontrada com o ID informado" }
+      ],
+      "rules": [
+        "Atualização parcial via PersonMapper.updateFromDto() — apenas campos presentes no DTO são alterados",
+        "socialSecurity não é atualizável por este método",
+        "Utiliza PUT no controller mas tem comportamento de PATCH (atualização parcial via mapper)"
+      ]
+    },
+    {
+      "name": "deletePerson",
+      "objective": "Remover uma Person pelo ID.",
+      "description": "Executa personRepository.deleteById(id) dentro de try/catch. Captura EmptyResultDataAccessException e relança como ResourceNotFoundException. A deleção cascateia para Address e Mugshot via CascadeType.ALL definido na entidade.",
+      "annotations": [],
+      "input": {
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true }],
+        "example": { "id": 1 }
+      },
+      "output": { "type": "void", "example": null },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "EmptyResultDataAccessException capturada — ID não existe no banco" }
+      ],
+      "rules": [
+        "CascadeType.ALL na entidade Person — Address e Mugshot associados são deletados junto",
+        "orphanRemoval=true para Address — endereços órfãos são removidos automaticamente"
+      ]
+    }
+  ]
+}

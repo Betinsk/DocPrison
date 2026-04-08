@@ -1,141 +1,191 @@
 {
   "controller": "PersonController",
-  "package": "com.federal.prision.person",
   "baseEndpoint": "/person",
-  "description": "Controller responsável por gerenciar operações relacionadas a pessoas no sistema, incluindo criação, consulta, atualização e remoção.",
+  "description": "Controller REST responsável por expor os endpoints HTTP da entidade Person. Delega toda a lógica de negócio ao PersonService e retorna ResponseEntity com os status codes apropriados.",
+  "annotations": ["@RestController", "@RequestMapping"],
   "methods": [
     {
-      "method": "POST",
-      "endpoint": "/person",
       "name": "createPersonWithAddress",
-      "objective": "Criar uma nova pessoa com endereço associado",
-      "description": "Recebe um objeto PersonDto contendo os dados da pessoa e seus endereços, valida as informações e realiza a persistência no banco de dados através do PersonService.",
+      "httpMethod": "POST",
+      "endpoint": "/person",
+      "objective": "Registrar uma nova Person junto com seus endereços em uma única requisição.",
+      "description": "Recebe um PersonDto validado via @Valid, delega ao PersonService.createPersonWithAddress() que executa a operação de forma transacional, e retorna a entidade Person persistida com status 201 Created.",
+      "annotations": ["@PostMapping", "@RequestBody", "@Valid"],
       "input": {
         "type": "PersonDto",
+        "fields": [
+          { "name": "socialSecurity", "type": "String", "required": true, "constraint": "unique" },
+          { "name": "name",           "type": "String", "required": false },
+          { "name": "email",          "type": "String", "required": false },
+          { "name": "birthDate",      "type": "String", "format": "yyyy-MM-dd", "required": false },
+          { "name": "gender",         "type": "String", "required": false },
+          { "name": "addresses",      "type": "List", "required": false }
+        ],
         "example": {
-          "name": "Walter White",
-          "birthDate": "1971-12-25",
-          "email": "wwhite@gmail.com",
           "socialSecurity": "188448443",
+          "name": "Walter White",
+          "email": "wwhite@gmail.com",
+          "birthDate": "1971-12-25",
+          "gender": "M",
           "addresses": [
-            {
-              "street": "Albuquerque Street",
-              "city": "Albuquerque",
-              "state": "New Mexico",
-              "zipCode": "87101"
-            }
+            { "streetAddress": "308 Negra Arroyo Lane", "city": "Albuquerque", "state": "New Mexico", "country": "EUA" }
           ]
         }
       },
       "output": {
-        "type": "Person",
-        "status": 201,
-        "description": "Retorna a pessoa criada com os dados persistidos no banco."
-      },
-      "rules": [
-        "Os dados devem passar pela validação definida nas anotações @Valid",
-        "Social Security não pode estar duplicado no banco",
-        "Pode conter múltiplos endereços associados",
-        "Caso os dados sejam inválidos, retorna erro de validação"
-      ]
-    },
-    {
-      "method": "GET",
-      "endpoint": "/person",
-      "name": "findAll",
-      "objective": "Listar todas as pessoas cadastradas",
-      "description": "Busca todas as pessoas registradas no sistema através do PersonService.",
-      "input": {
-        "type": "none"
-      },
-      "output": {
-        "type": "List<Person>",
-        "status": 200,
-        "example": [
-          {
-            "id": 1,
-            "name": "Walter White",
-            "email": "wwhite@gmail.com",
-            "socialSecurity": "188448443"
-          }
-        ]
-      },
-      "rules": [
-        "Retorna uma lista de pessoas cadastradas",
-        "Caso não existam registros, retorna uma lista vazia"
-      ]
-    },
-    {
-      "method": "GET",
-      "endpoint": "/person/{id}",
-      "name": "findById",
-      "objective": "Buscar uma pessoa pelo ID",
-      "description": "Consulta o banco de dados para retornar os dados de uma pessoa específica.",
-      "input": {
-        "type": "PathVariable",
-        "example": {
-          "id": 1
-        }
-      },
-      "output": {
-        "type": "Person",
-        "status": 200,
+        "type": "ResponseEntity",
+        "statusCode": 201,
         "example": {
           "id": 1,
+          "socialSecurity": "188448443",
           "name": "Walter White",
           "email": "wwhite@gmail.com",
-          "socialSecurity": "188448443"
+          "birthDate": "1971-12-25",
+          "gender": "M",
+          "addresses": []
         }
       },
+      "exceptions": [
+        { "type": "DatabaseException",             "condition": "socialSecurity já cadastrado no banco", "statusCode": 409 },
+        { "type": "MethodArgumentNotValidException","condition": "campos inválidos no body (@Valid falhou)", "statusCode": 400 }
+      ],
       "rules": [
-        "O ID deve existir no banco",
-        "Caso o ID não seja encontrado, pode retornar erro 404"
+        "O campo socialSecurity deve ser único no banco (constraint @Column unique=true)",
+        "A operação é transacional — se a criação de qualquer endereço falhar, o Person também não é persistido"
       ]
     },
     {
-      "method": "PUT",
+      "name": "addAddress",
+      "httpMethod": "POST",
+      "endpoint": "/person/{id}/address",
+      "objective": "Adicionar um novo endereço a uma Person já existente.",
+      "description": "Recebe o ID da Person via @PathVariable e um AddressDto via @RequestBody. Delega ao PersonService.addAddress() que valida a existência da Person, cria o Address via AddressService e retorna a Person atualizada com status 201 Created.",
+      "annotations": ["@PostMapping", "@PathVariable", "@RequestBody", "@Valid"],
+      "input": {
+        "type": "AddressDto",
+        "fields": [
+          { "name": "id",                "type": "Long",   "required": true, "source": "@PathVariable" },
+          { "name": "streetAddress",     "type": "String", "required": true },
+          { "name": "addressComplement", "type": "String", "required": false },
+          { "name": "city",              "type": "String", "required": true },
+          { "name": "state",             "type": "String", "required": false },
+          { "name": "country",           "type": "String", "required": false }
+        ],
+        "example": {
+          "streetAddress": "308 Negra Arroyo Lane",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA"
+        }
+      },
+      "output": {
+        "type": "ResponseEntity",
+        "statusCode": 201,
+        "example": { "id": 1, "name": "Walter White", "addresses": [{ "streetAddress": "308 Negra Arroyo Lane" }] }
+      },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Person com o ID informado não encontrada", "statusCode": 404 }
+      ],
+      "rules": [
+        "A Person deve existir antes de adicionar o endereço",
+        "A operação é transacional via PersonService.addAddress()"
+      ]
+    },
+    {
+      "name": "findAll",
+      "httpMethod": "GET",
+      "endpoint": "/person",
+      "objective": "Retornar todas as Persons cadastradas.",
+      "description": "Delega ao PersonService.findAll() que executa personRepository.findAll(). Retorna lista vazia quando não há registros — nunca retorna null.",
+      "annotations": ["@GetMapping"],
+      "input": { "type": null, "fields": [], "example": null },
+      "output": {
+        "type": "ResponseEntity>",
+        "statusCode": 200,
+        "example": [{ "id": 1, "name": "Walter White" }, { "id": 2, "name": "Jesse Pinkman" }]
+      },
+      "exceptions": [],
+      "rules": [
+        "Sem paginação — pode impactar performance com grande volume de registros",
+        "Retorna lista vazia (não null) quando não há Persons cadastradas"
+      ]
+    },
+    {
+      "name": "findById",
+      "httpMethod": "GET",
       "endpoint": "/person/{id}",
+      "objective": "Retornar uma Person pelo ID.",
+      "description": "Recebe o ID via @PathVariable e delega ao PersonService.findById() que utiliza personRepository.findById().orElseThrow(), lançando ResourceNotFoundException se o ID não existir.",
+      "annotations": ["@GetMapping", "@PathVariable"],
+      "input": {
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true, "source": "@PathVariable" }],
+        "example": { "id": 1 }
+      },
+      "output": {
+        "type": "ResponseEntity",
+        "statusCode": 200,
+        "example": { "id": 1, "socialSecurity": "188448443", "name": "Walter White" }
+      },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Nenhuma Person encontrada com o ID informado", "statusCode": 404 }
+      ],
+      "rules": ["O ID deve ser do tipo Long"]
+    },
+    {
       "name": "updatePerson",
-      "objective": "Atualizar os dados de uma pessoa",
-      "description": "Recebe um PersonUpdateDto com os dados atualizados e aplica as alterações no registro correspondente.",
+      "httpMethod": "PUT",
+      "endpoint": "/person/{id}",
+      "objective": "Atualizar os dados de uma Person existente.",
+      "description": "Recebe o ID via @PathVariable e um PersonUpdateDto via @RequestBody. Delega ao PersonService.updatePerson() que recupera a entidade, aplica atualização parcial via PersonMapper.updateFromDto() e persiste via personRepository.save().",
+      "annotations": ["@PutMapping", "@PathVariable", "@RequestBody", "@Valid"],
       "input": {
         "type": "PersonUpdateDto",
-        "example": {
-          "name": "Walter Hartwell White",
-          "email": "walterwhite@gmail.com"
-        }
+        "fields": [
+          { "name": "id",        "type": "Long",   "required": true, "source": "@PathVariable" },
+          { "name": "name",      "type": "String", "required": false },
+          { "name": "email",     "type": "String", "required": false },
+          { "name": "birthDate", "type": "String", "format": "yyyy-MM-dd", "required": false },
+          { "name": "gender",    "type": "String", "required": false }
+        ],
+        "example": { "name": "Walter H. White", "email": "heisenberg@gmail.com" }
       },
       "output": {
-        "type": "Person",
-        "status": 200,
-        "description": "Retorna o objeto atualizado."
+        "type": "ResponseEntity",
+        "statusCode": 200,
+        "example": { "id": 1, "name": "Walter H. White", "email": "heisenberg@gmail.com" }
       },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Nenhuma Person encontrada com o ID informado", "statusCode": 404 }
+      ],
       "rules": [
-        "O ID informado deve existir",
-        "Apenas campos presentes no DTO podem ser alterados",
-        "Os dados devem respeitar as validações do DTO"
+        "Atualização parcial — apenas os campos presentes no PersonUpdateDto são modificados via mapper",
+        "socialSecurity não é atualizável por este endpoint"
       ]
     },
     {
-      "method": "DELETE",
-      "endpoint": "/person/{id}",
       "name": "deletePerson",
-      "objective": "Remover uma pessoa do sistema",
-      "description": "Remove o registro de uma pessoa no banco de dados através do ID informado.",
+      "httpMethod": "DELETE",
+      "endpoint": "/person/{id}",
+      "objective": "Remover uma Person pelo ID.",
+      "description": "Recebe o ID via @PathVariable e delega ao PersonService.deletePerson() que executa personRepository.deleteById(). Captura EmptyResultDataAccessException e lança ResourceNotFoundException. Retorna 204 No Content.",
+      "annotations": ["@DeleteMapping", "@PathVariable"],
       "input": {
-        "type": "PathVariable",
-        "example": {
-          "id": 1
-        }
+        "type": "Long",
+        "fields": [{ "name": "id", "type": "Long", "required": true, "source": "@PathVariable" }],
+        "example": { "id": 1 }
       },
       "output": {
-        "type": "void",
-        "status": 204,
-        "description": "Retorna resposta sem conteúdo após exclusão."
+        "type": "ResponseEntity",
+        "statusCode": 204,
+        "example": null
       },
+      "exceptions": [
+        { "type": "ResourceNotFoundException", "condition": "Nenhuma Person encontrada com o ID informado", "statusCode": 404 }
+      ],
       "rules": [
-        "O ID deve existir no banco",
-        "Após exclusão o registro não poderá mais ser recuperado"
+        "A deleção cascateia para Address e Mugshot (CascadeType.ALL na entidade Person)",
+        "Retorna 204 No Content sem body"
       ]
     }
   ]
