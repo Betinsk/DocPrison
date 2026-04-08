@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import DropDownMenu from "./DropdownMenu";
 import DropDownMenuAuth from "./DropdownMenuAuth";
-
 import { types } from "../service/types";
 
 export default function Sidebar() {
@@ -10,104 +9,137 @@ export default function Sidebar() {
   function handleSelect(className) {
     loadInfData(className).then((data) => {
       if (!data) return;
-      console.log(data)
 
-    let route = "/information";
-
-    if (className.endsWith("Controller")) {
-        route = "/informationController";
-    } else if (className.endsWith("Service")) {
-        route = "/informationService";
-    }
+      let route = "/information";
+      if (className.endsWith("Controller")) route = "/informationController";
+      else if (className.endsWith("Service")) route = "/informationService";
 
       navigate(route, { state: { className: data } });
     });
   }
 
-    function handleSelectAuth(className) {
+  function handleSelectAuth(className) {
     loadInfData(className).then((data) => {
       if (!data) return;
-      console.log(data)
 
-    let route = "/information";
+      let route = "/information";
+      if (className.endsWith("Controller")) route = "/informationController";
+      else if (className.endsWith("Service")) route = "/informationService";
+      else if (className.endsWith("Filter")) route = "/informationService";
 
-    if (className.endsWith("Controller")) {
-        route = "/informationController";
-    } else if (className.endsWith("Service")) {
-        route = "/informationService";
-      } else if (className.endsWith("Filter")) {
-        route = "/informationService";
-    }
       navigate(route, { state: { className: data } });
     });
   }
-
 
   async function loadInfData(className) {
     try {
-
       const type = types.find(t => t.match(className));
-
       const docs = type.docs;
       const path = type.path(className);
-
       const loader = docs[path];
-
-      if (!loader) {
-        throw new Error("Arquivo não encontrado");
-      }
-
+      if (!loader) throw new Error("Arquivo não encontrado");
       const data = await loader();
       return data.default;
-
     } catch (error) {
       console.error(error);
     }
   }
 
-  /* async function loadInfData(className) {
-  
-    try {
-  
-      const isController = className.endsWith("Controller");
-  
-      const docs = isController ? controllerDocs : entityDocs;
-  
-      const path = isController
-        ? `../data/controllers/${className}.json`
-        : `../data/entities/${className}.json`;
-  
-      const loader = docs[path];
-  
-      if (!loader) {
-        console.error("Arquivo não encontrado:", path);
-        return null;
-      }
-  
-      const module = await loader();
-  
-      return module.default;
-  
-    } catch (error) {
-  
-      console.error("Erro carregando documentação:", error);
-      return null;
-  
-    }
-  } */
-
   return (
-    <>
-      <h5 className="text-center">Funcionalidades e classes</h5>
-      <DropDownMenu type="Person" onSelect={handleSelect} />
-      <DropDownMenu type="Address" onSelect={handleSelect} />
-      <DropDownMenu type="Inmate" onSelect={handleSelect} />
-      <DropDownMenu type="User" onSelect={handleSelect} />
+    <div style={{
+      background: "#0f1117",
+      borderRadius: "10px",
+      padding: "16px 10px",
+      minHeight: "100vh",
+      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+    }}>
 
-      <h5 className="text-center">Autenticação</h5>
-      <DropDownMenuAuth type="Auth" onSelect={handleSelectAuth} />
-      
+      {/* Logo / título */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        padding: "0 8px 16px",
+        borderBottom: "1px solid #1e2130",
+        marginBottom: "16px",
+      }}>
+        <span style={{ fontSize: "16px" }}>🏛️</span>
+        <span style={{ color: "#e2e8f0", fontSize: "13px", fontWeight: 600 }}>Prisão Federal</span>
+        <span style={{
+          marginLeft: "auto",
+          fontSize: "10px",
+          color: "#3b82f6",
+          background: "#1e3a5f",
+          padding: "2px 6px",
+          borderRadius: "4px",
+        }}>docs</span>
+      </div>
 
-    </>
-  )
+      {/* Seção principal */}
+      <div style={{ marginBottom: "20px" }}>
+        <p style={{
+          color: "#475569",
+          fontSize: "10px",
+          fontWeight: 600,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          padding: "0 8px",
+          marginBottom: "6px",
+        }}>
+          Funcionalidades
+        </p>
+
+        <DropDownMenu type="Person"  onSelect={handleSelect} />
+        <DropDownMenu type="Address" onSelect={handleSelect} />
+        <DropDownMenu type="Inmate"  onSelect={handleSelect} />
+        <DropDownMenu type="User"    onSelect={handleSelect} />
+      </div>
+
+      {/* Divisor */}
+      <div style={{ borderTop: "1px solid #1e2130", margin: "8px 0 16px" }} />
+
+      {/* Seção auth */}
+      <div>
+        <p style={{
+          color: "#475569",
+          fontSize: "10px",
+          fontWeight: 600,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          padding: "0 8px",
+          marginBottom: "6px",
+        }}>
+          Autenticação
+        </p>
+
+        <DropDownMenuAuth type="Auth" onSelect={handleSelectAuth} />
+      </div>
+
+      {/* Legenda de cores */}
+      <div style={{
+        marginTop: "auto",
+        paddingTop: "24px",
+        borderTop: "1px solid #1e2130",
+        marginTop: "32px",
+      }}>
+        {[
+          { color: "#3b82f6", label: "Entity" },
+          { color: "#10b981", label: "Controller" },
+          { color: "#f59e0b", label: "Service" },
+          { color: "#8b5cf6", label: "Filter" },
+        ].map(({ color, label }) => (
+          <div key={label} style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "3px 8px",
+          }}>
+            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, flexShrink: 0 }} />
+            <span style={{ color: "#475569", fontSize: "11px" }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
 }
