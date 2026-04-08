@@ -1,148 +1,181 @@
 {
   "controller": "AddressController",
-  "package": "com.federal.prision.address",
   "baseEndpoint": "/addresses",
-  "description": "Controller responsável por gerenciar operações relacionadas aos endereços associados às pessoas no sistema.",
+  "description": "Controller REST responsável por expor os endpoints HTTP da entidade Address. Delega toda a lógica de negócio ao AddressService.",
+  "annotations": ["@RestController", "@RequestMapping"],
   "methods": [
     {
-      "method": "GET",
-      "endpoint": "/addresses",
       "name": "findAll",
-      "objective": "Listar todos os endereços cadastrados",
-      "description": "Retorna todos os endereços armazenados no sistema.",
+      "httpMethod": "GET",
+      "endpoint": "/addresses",
+      "objective": "Retornar todos os endereços cadastrados.",
+      "description": "Delega ao AddressService.findAll(). Diferente do PersonService, o AddressService lança ObjectNotFoundException se a lista estiver vazia — portanto este endpoint retorna 404 quando não há endereços cadastrados.",
+      "annotations": ["@GetMapping"],
       "input": {
-        "type": "none"
+        "type": null,
+        "fields": [],
+        "example": null
       },
       "output": {
-        "type": "List<Address>",
-        "status": 200,
+        "type": "ResponseEntity<List<Address>>",
+        "statusCode": 200,
         "example": [
           {
             "id": 1,
-            "street": "Main Street",
-            "city": "New York",
-            "state": "NY",
-            "zipCode": "10001"
+            "street": "308 Negra Arroyo Lane",
+            "city": "Albuquerque",
+            "state": "New Mexico",
+            "country": "EUA"
           }
         ]
       },
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "Lista de endereços vazia", "statusCode": 404 }
+      ],
       "rules": [
-        "Retorna uma lista com todos os endereços cadastrados",
-        "Caso não existam registros, retorna uma lista vazia"
+        "Lança ObjectNotFoundException se não houver endereços — comportamento diferente do PersonService que retorna lista vazia"
       ]
     },
     {
-      "method": "GET",
-      "endpoint": "/addresses/{id}",
       "name": "findById",
-      "objective": "Buscar endereço por ID",
-      "description": "Consulta um endereço específico no banco de dados utilizando o ID.",
+      "httpMethod": "GET",
+      "endpoint": "/addresses/{id}",
+      "objective": "Retornar um endereço pelo ID.",
+      "description": "Recebe o ID via @PathVariable e delega ao AddressService.findById() que utiliza addressRepository.findById().orElseThrow(), lançando ObjectNotFoundException se o ID não existir.",
+      "annotations": ["@GetMapping", "@PathVariable"],
       "input": {
-        "type": "PathVariable",
-        "example": {
-          "id": 1
-        }
+        "type": "Long",
+        "fields": [
+          { "name": "id", "type": "Long", "required": true, "source": "@PathVariable" }
+        ],
+        "example": { "id": 1 }
       },
       "output": {
-        "type": "Address",
-        "status": 200,
+        "type": "ResponseEntity<Address>",
+        "statusCode": 200,
         "example": {
           "id": 1,
-          "street": "Main Street",
-          "city": "New York",
-          "state": "NY",
-          "zipCode": "10001"
+          "street": "308 Negra Arroyo Lane",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA"
         }
       },
-      "rules": [
-        "O ID deve existir no banco de dados",
-        "Caso não exista, pode retornar erro 404"
-      ]
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "Nenhum Address encontrado com o ID informado", "statusCode": 404 }
+      ],
+      "rules": ["O ID deve ser do tipo Long"]
     },
     {
-      "method": "POST",
-      "endpoint": "/addresses/persons/{personId}/addresses",
       "name": "create",
-      "objective": "Criar um novo endereço para uma pessoa",
-      "description": "Recebe os dados de endereço via AddressDto e associa o endereço a uma pessoa existente.",
+      "httpMethod": "POST",
+      "endpoint": "/addresses/persons/{personId}/addresses",
+      "objective": "Criar um novo endereço vinculado a uma Person existente.",
+      "description": "Recebe o personId via @PathVariable e um AddressDto via @RequestBody. Converte o DTO via AddressService.fromDto() e delega a persistência ao AddressService.createAddress(). Retorna o Address criado diretamente (sem ResponseEntity — status 200 implícito).",
+      "annotations": ["@PostMapping", "@PathVariable", "@RequestBody", "@Valid"],
       "input": {
         "type": "AddressDto",
+        "fields": [
+          { "name": "personId",          "type": "Long",   "required": true, "source": "@PathVariable" },
+          { "name": "street",            "type": "String", "required": false },
+          { "name": "addressComplement", "type": "String", "required": false },
+          { "name": "city",              "type": "String", "required": false },
+          { "name": "state",             "type": "String", "required": false },
+          { "name": "country",           "type": "String", "required": false }
+        ],
         "example": {
-          "street": "Main Street",
-          "city": "New York",
-          "state": "NY",
-          "zipCode": "10001"
+          "street": "308 Negra Arroyo Lane",
+          "addressComplement": "Casa",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA"
         }
       },
       "output": {
         "type": "Address",
-        "status": 201,
+        "statusCode": 200,
         "example": {
-          "id": 10,
-          "street": "Main Street",
-          "city": "New York",
-          "state": "NY",
-          "zipCode": "10001"
+          "id": 2,
+          "street": "308 Negra Arroyo Lane",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA"
         }
       },
+      "exceptions": [
+        { "type": "RuntimeException", "condition": "Person com personId não encontrada", "statusCode": 500 }
+      ],
       "rules": [
-        "O personId deve existir no banco",
-        "Os dados devem passar pela validação @Valid",
-        "Um endereço sempre deve estar associado a uma pessoa"
+        "A Person referenciada pelo personId deve existir no banco",
+        "Retorna Address diretamente sem ResponseEntity — status 200 implícito (considerar padronizar para 201)"
       ]
     },
     {
-      "method": "PUT",
-      "endpoint": "/addresses/{id}",
       "name": "updateAddress",
-      "objective": "Atualizar um endereço existente",
-      "description": "Atualiza os dados de um endereço existente utilizando o ID.",
+      "httpMethod": "PUT",
+      "endpoint": "/addresses/{id}",
+      "objective": "Atualizar todos os campos de um endereço existente.",
+      "description": "Recebe o ID via @PathVariable e um AddressDto via @RequestBody. Converte o DTO via AddressService.fromDto() e delega ao AddressService.updateAddress() que substitui todos os campos do Address e persiste via addressRepository.save().",
+      "annotations": ["@PutMapping", "@PathVariable", "@RequestBody", "@Valid"],
       "input": {
-        "type": "Address",
+        "type": "AddressDto",
+        "fields": [
+          { "name": "id",                "type": "Long",   "required": true, "source": "@PathVariable" },
+          { "name": "street",            "type": "String", "required": false },
+          { "name": "addressComplement", "type": "String", "required": false },
+          { "name": "city",              "type": "String", "required": false },
+          { "name": "state",             "type": "String", "required": false },
+          { "name": "country",           "type": "String", "required": false }
+        ],
         "example": {
-          "street": "New Street",
-          "city": "Boston",
-          "state": "MA",
-          "zipCode": "02101"
+          "street": "Avenida Brasil",
+          "city": "Belo Horizonte",
+          "state": "Minas Gerais",
+          "country": "Brasil"
         }
       },
       "output": {
-        "type": "Address",
-        "status": 200,
+        "type": "ResponseEntity<Address>",
+        "statusCode": 200,
         "example": {
           "id": 1,
-          "street": "New Street",
-          "city": "Boston",
-          "state": "MA",
-          "zipCode": "02101"
+          "street": "Avenida Brasil",
+          "city": "Belo Horizonte",
+          "state": "Minas Gerais",
+          "country": "Brasil"
         }
       },
+      "exceptions": [
+        { "type": "RuntimeException", "condition": "Address com o ID informado não encontrado", "statusCode": 500 }
+      ],
       "rules": [
-        "O ID deve existir no banco",
-        "Os dados enviados substituem os dados atuais do endereço"
+        "Atualização completa — todos os campos são sobrescritos (não usa mapper parcial como PersonService)",
+        "person não é atualizado por este endpoint"
       ]
     },
     {
-      "method": "DELETE",
-      "endpoint": "/addresses/{id}",
       "name": "deleteAddress",
-      "objective": "Remover um endereço do sistema",
-      "description": "Remove um endereço do banco de dados utilizando o ID informado.",
+      "httpMethod": "DELETE",
+      "endpoint": "/addresses/{id}",
+      "objective": "Remover um endereço pelo ID.",
+      "description": "Recebe o ID via @PathVariable e delega ao AddressService.deleteAdress() que executa addressRepository.deleteById() dentro de try/catch. Captura EmptyResultDataAccessException e relança como ObjectNotFoundException. Retorna 204 No Content.",
+      "annotations": ["@DeleteMapping", "@PathVariable"],
       "input": {
-        "type": "PathVariable",
-        "example": {
-          "id": 1
-        }
+        "type": "Long",
+        "fields": [
+          { "name": "id", "type": "Long", "required": true, "source": "@PathVariable" }
+        ],
+        "example": { "id": 1 }
       },
       "output": {
-        "type": "void",
-        "status": 204,
-        "description": "Retorna resposta sem conteúdo após exclusão."
+        "type": "ResponseEntity<Void>",
+        "statusCode": 204,
+        "example": null
       },
-      "rules": [
-        "O ID deve existir no banco",
-        "Após exclusão o endereço não poderá mais ser recuperado"
-      ]
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "EmptyResultDataAccessException capturada — ID não existe no banco", "statusCode": 404 }
+      ],
+      "rules": ["Retorna 204 No Content sem body"]
     }
   ]
 }

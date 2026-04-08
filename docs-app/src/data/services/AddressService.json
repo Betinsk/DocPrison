@@ -1,104 +1,172 @@
-[
-  {
-    "name": "createAddress",
-    "objective": "Criar um novo endereço para uma pessoa",
-    "description": "Recebe um endereço e o ID da pessoa, busca a pessoa no banco e associa o endereço antes de salvar.",
-    "input": [
-      {
-        "address": {
-          "street": "Rua A",
-          "addressComplement": "Apto 101",
-          "city": "Belo Horizonte",
-          "state": "MG",
-          "country": "Brazil"
-        },
-        "personId": 1
-      }
-    ],
-    "output": [
-      {
-        "address": "Objeto Address salvo no banco"
-      }
-    ],
-    "rules": [
-      "O ID da pessoa deve existir no banco",
-      "O endereço deve ser vinculado a uma pessoa",
-      "Caso a pessoa não exista, lança RuntimeException"
-    ]
-  },
-  {
-    "name": "findById",
-    "objective": "Buscar um endereço pelo ID",
-    "description": "Busca um endereço no banco de dados utilizando o ID informado.",
-    "input": [
-      {
-        "id": 1
-      }
-    ],
-    "output": [
-      {
-        "address": "Objeto Address encontrado"
-      }
-    ],
-    "rules": [
-      "O ID deve existir no banco",
-      "Caso não exista, lança ObjectNotFoundException"
-    ]
-  },
-  {
-    "name": "findAll",
-    "objective": "Listar todos os endereços cadastrados",
-    "description": "Retorna todos os endereços armazenados no banco de dados.",
-    "input": [],
-    "output": [
-      {
-        "addresses": "Lista de objetos Address"
-      }
-    ],
-    "rules": [
-      "Caso não existam registros, lança ObjectNotFoundException"
-    ]
-  },
-  {
-    "name": "updateAddress",
-    "objective": "Atualizar um endereço existente",
-    "description": "Busca um endereço pelo ID e atualiza seus dados com base nas informações fornecidas.",
-    "input": [
-      {
-        "id": 1,
-        "addressRequest": {
-          "street": "Nova Rua",
-          "addressComplement": "Casa",
-          "city": "São Paulo",
-          "state": "SP",
-          "country": "Brazil"
+{
+  "service": "AddressService",
+  "description": "Camada de negócio responsável pelas operações sobre a entidade Address. Orquestra AddressRepository e PersonRepository. Expõe também o método utilitário fromDto() usado tanto internamente quanto pelo PersonService.",
+  "annotations": ["@Service"],
+  "methods": [
+    {
+      "name": "fromDto",
+      "objective": "Converter um AddressDto em entidade Address.",
+      "description": "Método utilitário que mapeia manualmente os campos do AddressDto para uma nova instância de Address. Instancia um Person apenas com o ID do DTO para satisfazer a FK — sem buscar a entidade completa no banco. Utilizado internamente e pelo PersonService.",
+      "annotations": [],
+      "input": {
+        "type": "AddressDto",
+        "fields": [
+          { "name": "street",            "type": "String", "required": false },
+          { "name": "addressComplement", "type": "String", "required": false },
+          { "name": "state",             "type": "String", "required": false },
+          { "name": "city",              "type": "String", "required": false },
+          { "name": "country",           "type": "String", "required": false },
+          { "name": "personId",          "type": "Long",   "required": false }
+        ],
+        "example": {
+          "street": "308 Negra Arroyo Lane",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA",
+          "personId": 1
         }
-      }
-    ],
-    "output": [
-      {
-        "address": "Objeto Address atualizado"
-      }
-    ],
-    "rules": [
-      "O ID deve existir no banco",
-      "Os campos do endereço são sobrescritos pelos novos valores",
-      "Caso não exista, lança RuntimeException"
-    ]
-  },
-  {
-    "name": "deleteAdress",
-    "objective": "Remover um endereço do sistema",
-    "description": "Remove um endereço do banco de dados com base no ID informado.",
-    "input": [
-      {
-        "id": 1
-      }
-    ],
-    "output": [],
-    "rules": [
-      "O ID deve existir no banco",
-      "Caso não exista, lança ObjectNotFoundException"
-    ]
-  }
-]
+      },
+      "output": {
+        "type": "Address",
+        "example": {
+          "street": "308 Negra Arroyo Lane",
+          "city": "Albuquerque",
+          "state": "New Mexico",
+          "country": "EUA"
+        }
+      },
+      "exceptions": [],
+      "rules": [
+        "Não realiza busca no banco — instancia Person apenas com o ID para mapear a FK",
+        "Método utilitário público — também consumido pelo PersonService"
+      ]
+    },
+    {
+      "name": "createAddress",
+      "objective": "Persistir um novo Address vinculado a uma Person existente.",
+      "description": "Busca a Person pelo personId via personRepository.findById().orElseThrow(). Associa a Person ao Address e persiste via addressRepository.save(). Retorna o Address com ID gerado.",
+      "annotations": [],
+      "input": {
+        "type": "Address + Long",
+        "fields": [
+          { "name": "address",  "type": "Address", "required": true },
+          { "name": "personId", "type": "Long",    "required": true }
+        ],
+        "example": {
+          "address": { "street": "308 Negra Arroyo Lane", "city": "Albuquerque" },
+          "personId": 1
+        }
+      },
+      "output": {
+        "type": "Address",
+        "example": { "id": 1, "street": "308 Negra Arroyo Lane", "city": "Albuquerque" }
+      },
+      "exceptions": [
+        { "type": "RuntimeException", "condition": "Person com o personId informado não encontrada no banco" }
+      ],
+      "rules": [
+        "A Person deve existir antes de criar o Address",
+        "Sobrescreve o person do Address com a entidade completa buscada do banco"
+      ]
+    },
+    {
+      "name": "findById",
+      "objective": "Recuperar um Address pelo ID.",
+      "description": "Executa addressRepository.findById(id).orElseThrow(), lançando ObjectNotFoundException com mensagem detalhada se o ID não existir.",
+      "annotations": [],
+      "input": {
+        "type": "Long",
+        "fields": [
+          { "name": "id", "type": "Long", "required": true }
+        ],
+        "example": { "id": 1 }
+      },
+      "output": {
+        "type": "Address",
+        "example": { "id": 1, "street": "308 Negra Arroyo Lane", "city": "Albuquerque" }
+      },
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "Nenhum Address encontrado com o ID informado" }
+      ],
+      "rules": ["O ID deve ser do tipo Long"]
+    },
+    {
+      "name": "findAll",
+      "objective": "Recuperar todos os endereços cadastrados.",
+      "description": "Executa addressRepository.findAll(). Diferente do PersonService, lança ObjectNotFoundException se a lista retornada for vazia — não retorna lista vazia.",
+      "annotations": [],
+      "input": {
+        "type": null,
+        "fields": [],
+        "example": null
+      },
+      "output": {
+        "type": "List<Address>",
+        "example": [
+          { "id": 1, "street": "308 Negra Arroyo Lane", "city": "Albuquerque" }
+        ]
+      },
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "Nenhum endereço encontrado — lista vazia" }
+      ],
+      "rules": [
+        "Lança exceção para lista vazia — comportamento diferente do PersonService que retorna lista vazia sem exceção",
+        "Sem paginação — pode impactar performance com grande volume de registros"
+      ]
+    },
+    {
+      "name": "updateAddress",
+      "objective": "Atualizar todos os campos de um Address existente.",
+      "description": "Recupera o Address via addressRepository.findById().orElseThrow(). Sobrescreve todos os campos manualmente (street, addressComplement, state, city, country) com os valores do addressRequest e persiste via addressRepository.save().",
+      "annotations": [],
+      "input": {
+        "type": "Address",
+        "fields": [
+          { "name": "id",                "type": "Long",   "required": true },
+          { "name": "street",            "type": "String", "required": false },
+          { "name": "addressComplement", "type": "String", "required": false },
+          { "name": "state",             "type": "String", "required": false },
+          { "name": "city",              "type": "String", "required": false },
+          { "name": "country",           "type": "String", "required": false }
+        ],
+        "example": { "id": 1, "street": "Avenida Brasil", "city": "Belo Horizonte" }
+      },
+      "output": {
+        "type": "Address",
+        "example": { "id": 1, "street": "Avenida Brasil", "city": "Belo Horizonte" }
+      },
+      "exceptions": [
+        { "type": "RuntimeException", "condition": "Address com o ID informado não encontrado" }
+      ],
+      "rules": [
+        "Atualização completa — todos os campos são sobrescritos (sem mapper parcial)",
+        "person não é alterado por este método",
+        "Usa RuntimeException genérica — considerar padronizar para ObjectNotFoundException como nos demais métodos"
+      ]
+    },
+    {
+      "name": "deleteAdress",
+      "objective": "Remover um Address pelo ID.",
+      "description": "Executa addressRepository.deleteById(id) dentro de try/catch. Captura EmptyResultDataAccessException e relança como ObjectNotFoundException.",
+      "annotations": [],
+      "input": {
+        "type": "Long",
+        "fields": [
+          { "name": "id", "type": "Long", "required": true }
+        ],
+        "example": { "id": 1 }
+      },
+      "output": {
+        "type": "void",
+        "example": null
+      },
+      "exceptions": [
+        { "type": "ObjectNotFoundException", "condition": "EmptyResultDataAccessException capturada — ID não existe no banco" }
+      ],
+      "rules": [
+        "Nome do método com typo: deleteAdress (falta um 'd') — considerar corrigir para deleteAddress",
+        "Não possui CascadeType — Address não tem filhos, deleção direta"
+      ]
+    }
+  ]
+}

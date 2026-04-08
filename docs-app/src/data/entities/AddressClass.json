@@ -1,17 +1,84 @@
-[
-  {
-    "name": "Address",
-    "objective": "Registrar um novo endereço no sistema",
-    "description": "Recebe os dados de um endereço e realiza a persistência no banco de dados através do repositório.",
-    "input":   [
-        {
-            "streetAddress": "9809 Margo Street",
-            "addressComplement": "beje house",
-            "city": "Albuquerque",
-            "state": "New Mexico",
-            "country": "EUA"
-        }
-    ],
-    "rules": ["Os dados do endeço devem ser válidos", "Pode conter múltiplos endereços associados"]
+{
+  "entity": "Address",
+  "table": "address",
+  "description": "Entidade JPA que representa um endereço associado a uma Person. Implementa Serializable. Possui relacionamento ManyToOne com Person — o lado dono da relação (JoinColumn person_id). @JsonBackReference evita recursão na serialização JSON com Person.",
+  "annotations": ["@Entity"],
+  "fields": [
+    {
+      "name": "id",
+      "type": "Long",
+      "annotations": ["@Id", "@GeneratedValue(IDENTITY)"],
+      "nullable": false,
+      "unique": true,
+      "description": "Chave primária gerada automaticamente pelo banco via IDENTITY strategy."
+    },
+    {
+      "name": "street",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Nome da rua do endereço."
+    },
+    {
+      "name": "addressComplement",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Complemento do endereço (apto, bloco, etc.)."
+    },
+    {
+      "name": "state",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Estado ou província."
+    },
+    {
+      "name": "city",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "Cidade do endereço."
+    },
+    {
+      "name": "country",
+      "type": "String",
+      "annotations": [],
+      "nullable": true,
+      "unique": false,
+      "description": "País do endereço."
+    },
+    {
+      "name": "person",
+      "type": "Person",
+      "annotations": ["@ManyToOne", "@JoinColumn(name=person_id)", "@JsonBackReference"],
+      "nullable": true,
+      "unique": false,
+      "description": "Referência à Person dona deste endereço. Lado dono da relação ManyToOne — a coluna person_id é gerenciada por esta entidade. @JsonBackReference evita loop de serialização com @JsonManagedReference em Person."
+    }
+  ],
+  "relationships": [
+    {
+      "type": "ManyToOne",
+      "target": "Person",
+      "mappedBy": null,
+      "cascade": "nenhum",
+      "orphanRemoval": false,
+      "description": "Muitos endereços podem pertencer a uma Person. Address é o lado dono da relação — possui a FK person_id na tabela."
+    }
+  ],
+  "inheritance": null,
+  "example": {
+    "id": 1,
+    "street": "308 Negra Arroyo Lane",
+    "addressComplement": "Casa",
+    "city": "Albuquerque",
+    "state": "New Mexico",
+    "country": "EUA",
+    "person": null
   }
-]
+}
